@@ -31,6 +31,7 @@ from schemas import (
     TokenRefreshResponseSchema
 )
 from security.interfaces import JWTAuthManagerInterface
+from security.passwords import hash_password
 
 router = APIRouter()
 
@@ -365,7 +366,8 @@ async def reset_password(
         )
 
     try:
-        user.password = data.password
+        hashed = hash_password(data.password)
+        user._hashed_password = hashed
         await db.run_sync(lambda s: s.delete(token_record))
         await db.commit()
     except SQLAlchemyError:
